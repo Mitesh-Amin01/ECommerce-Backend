@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "description": "This is Backend Of E-Commerce Website!",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon -r dotenv/config src/app.js"
   },
   "author": "Mitesh",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.15.1"
