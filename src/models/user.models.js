@@ -46,6 +46,10 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product"
     }],
+    address: [{
+        type:String,
+        trim:true
+    }],
     cart: [{
         type: Schema.Types.ObjectId,
         ref: "Cart"
