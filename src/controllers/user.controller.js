@@ -19,16 +19,14 @@ const generateTokens = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, phone, fullname, password } = req.body
-
     if ([fullname, email, username, phone, password].some((field) => field.trim() === "")) {
         throw new ApiError(400, "All Fields Are Required")
     }
     const existedUser = await User.findOne({ $or: [{ username }, { email }] })
-
+    console.log("Test")
     if (existedUser) {
         throw new ApiError(409, "User With Email or Username Already Exists!")
     }
-    console.log("Check: ", req.file.path)
     const profileLocalPath = req.file?.path
     if (!profileLocalPath) console.log("Not Found Profile Image Parh! ", profileLocalPath);
     const profileImage = await uploadOnCloudinary(profileLocalPath)
@@ -50,23 +48,23 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, phoneNumber, password } = req.body
-    if (!email || !phoneNumber) {
+
+    if (!(email || phoneNumber)) {
         throw ApiError(400, "Email/PhoneNumber And Password Required!")
     }
-    const user = User.findOne({ $or: [{ email }, { phoneNumber }] })
+    const user = await User.findOne({ $or: [{ email }, { phoneNumber }] })
 
     if (!user) {
         throw ApiError(404, "User Dose Not Exist!")
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
-
     if (!isPasswordValid) {
         throw ApiError(401, "Invalid User Credentials!")
     }
 
     const { accessToken, refreshToken } = await generateTokens(user._id)
-    const loggedInUser = User.findById(user._id).select("-refreshToken -password")
+    const loggedInUser = await User.findById(user._id).select("-refreshToken -password")
 
     const options = {
         httpOnly: true,
