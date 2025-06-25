@@ -18,56 +18,56 @@ const generateTokens = async (userId) => {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, phone, firstName, lastName, password } = req.body;
+    const { username, email, phone, firstName, lastName, password } = req.body;
 
-  console.log("User signup Value:- ", password);
+    console.log("User signup Value:- ", password);
 
-  if (
-    [firstName, lastName, email, username, phone, password].some(
-      (field) => field.trim() === ""
-    )
-  ) {
-    throw new ApiError(400, "All Fields Are Required");
-  }
+    if (
+        [firstName, lastName, email, username, phone, password].some(
+            (field) => field.trim() === ""
+        )
+    ) {
+        throw new ApiError(400, "All Fields Are Required");
+    }
 
-  const existedUser = await User.findOne({
-    $or: [{ username }, { email }],
-  });
+    const existedUser = await User.findOne({
+        $or: [{ username }, { email }],
+    });
 
-  if (existedUser) {
-    throw new ApiError(409, "User With Email or Username Already Exists!");
-  }
+    if (existedUser) {
+        throw new ApiError(409, "User With Email or Username Already Exists!");
+    }
 
-  const profileLocalPath = req.file?.path;
-  if (!profileLocalPath)
-    console.log("Not Found Profile Image Path! ", profileLocalPath);
+    const profileLocalPath = req.file?.path;
+    if (!profileLocalPath)
+        console.log("Not Found Profile Image Path! ", profileLocalPath);
 
-  const profileImage = await uploadOnCloudinary(profileLocalPath);
+    const profileImage = await uploadOnCloudinary(profileLocalPath);
 
-  const user = await User.create({
-    username,
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    email: email.trim().toLowerCase(),
-    phone: phone.trim(),
-    password,
-    avatar:
-      profileImage?.url ||
-      "https://res.cloudinary.com/dcnb4gg72/image/upload/v1750743495/avatar_bg_zfk1ms.jpg",
-  });
+    const user = await User.create({
+        username,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        password,
+        avatar:
+            profileImage?.url ||
+            "https://res.cloudinary.com/dcnb4gg72/image/upload/v1750743495/avatar_bg_zfk1ms.jpg",
+    });
 
-  const createdUser = await User.findById(user._id);
+    const createdUser = await User.findById(user._id);
 
-  if (!createdUser) {
-    throw new ApiError(
-      500,
-      "Something Went Wrong While Registering The User"
-    );
-  }
+    if (!createdUser) {
+        throw new ApiError(
+            500,
+            "Something Went Wrong While Registering The User"
+        );
+    }
 
-  return res
-    .status(201)
-    .json(new ApiResponse(200, createdUser, "User Registered Successfully"));
+    return res
+        .status(201)
+        .json(new ApiResponse(200, createdUser, "User Registered Successfully"));
 });
 
 
@@ -203,31 +203,31 @@ const changeCurrentPasword = asyncHandler(async (req, res) => {
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { firstName, lastName, username, birthdate, gender } = req.body;
+    const { firstName, lastName, username, birthdate, gender } = req.body;
 
-  if ([firstName, lastName, username, birthdate, gender].some(field => field.trim() === "")) {
-    throw new ApiError(400, "All Fields Are Required!");
-  }
+    if ([firstName, lastName, username, birthdate, gender].some(field => field.trim() === "")) {
+        throw new ApiError(400, "All Fields Are Required!");
+    }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        username: username.trim().toLowerCase(),
-        birthdate,
-        gender,
-      },
-    },
-    { new: true }
-  ).select("-refreshToken -password");
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                username: username.trim().toLowerCase(),
+                birthdate,
+                gender,
+            },
+        },
+        { new: true }
+    ).select("-refreshToken -password");
 
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
 
-  res.status(200).json(new ApiResponse(200, user, "Account details updated successfully!"));
+    res.status(200).json(new ApiResponse(200, user, "Account details updated successfully!"));
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
@@ -249,4 +249,29 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         { new: true }).select("-refreshToken -password")
     return res.status(200).json(new ApiResponse(200, user, "Account Avatar updated successfully!"))
 })
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPasword, updateAccountDetails, updateUserAvatar }
+
+const deleteUserAccount = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    console.log("Check")
+    if (!userId) {
+        throw new ApiError(400, "Invalid request: User ID is missing");
+    }
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, null, "User account deleted successfully"))
+});
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPasword, updateAccountDetails, updateUserAvatar, deleteUserAccount }
