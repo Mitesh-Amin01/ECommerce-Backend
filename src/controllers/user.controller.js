@@ -20,7 +20,7 @@ const generateTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, phone, firstName, lastName, password } = req.body;
 
-    console.log("User signup Value:- ", password);
+    // console.log("User signup Value:- ", password);
 
     if (
         [firstName, lastName, email, username, phone, password].some(
@@ -117,7 +117,7 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    console.log("Req Body:- ", req.user._id)
+    // console.log("Req Body:- ", req.user._id)
 
     await User.findByIdAndUpdate(
         req.user._id,
@@ -252,7 +252,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 const deleteUserAccount = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
-    console.log("Check")
     if (!userId) {
         throw new ApiError(400, "Invalid request: User ID is missing");
     }
