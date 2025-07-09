@@ -20,7 +20,9 @@ app.use(cookieParser())
 // routes import
 import userRouter from "./routes/user.routes.js"
 import { errorMiddleware } from './middleware/error.middleware.js'
+import googleAuthRouter from "./routes/google.routes.js";
 
 app.use('/v1/users',userRouter)
+app.use('/v1/users', googleAuthRouter);
 app.use(errorMiddleware);
 export { app }

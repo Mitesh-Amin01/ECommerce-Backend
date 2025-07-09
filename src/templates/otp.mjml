@@ -1,0 +1,64 @@
+<mjml>
+  <mj-head>
+    <mj-title>Your OTP Code - ECommerce</mj-title>
+    <mj-preview>Verify your email using this OTP</mj-preview>
+    <mj-font name="Inter" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <mj-style>
+      .otp-box {
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 6px;
+        padding: 14px 28px;
+        background-color: #f1d999;
+        color: #0e0f16;
+        border-radius: 8px;
+        display: inline-block;
+      }
+    </mj-style>
+  </mj-head>
+
+  <mj-body background-color="#0e0f16" font-family="Inter, sans-serif">
+
+    <!-- Header -->
+    <mj-section background-color="#0e0f16" padding="24px 0">
+      <mj-column>
+        <mj-text font-size="26px" color="#f1d999" font-weight="700" align="center">
+          🛒 ECommerce
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Main Content -->
+    <mj-section padding="32px 24px" background-color="#0e0f16">
+      <mj-column>
+        <mj-text font-size="22px" color="#f1d999" font-weight="600" align="center">
+          Verify Your Email
+        </mj-text>
+        <mj-text font-size="16px" color="#dcd5b6" align="center" padding-bottom="20px">
+          Use the code below to verify your email address.
+        </mj-text>
+
+        <!-- OTP Box -->
+        <mj-text align="center">
+          <span class="otp-box">{{OTP_CODE}}</span>
+        </mj-text>
+
+        <!-- Expiry Info -->
+        <mj-text font-size="14px" color="#bbbbbb" align="center" padding-top="24px">
+          This OTP is valid for 10 minutes.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#0e0f16" padding="16px 0">
+      <mj-column>
+        <mj-text font-size="12px" color="#888888" align="center">
+          If you didn’t request this, you can safely ignore this email.<br />
+          &copy; 2025 ECommerce. All rights reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>

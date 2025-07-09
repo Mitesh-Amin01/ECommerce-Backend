@@ -3,7 +3,9 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { User } from '../models/user.models.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { uploadOnCloudinary } from '../utils/cloudnary.js'
+import { sendOtpEmail } from '../utils/mailer.js'
 import jwt from 'jsonwebtoken'
+import redis from '../utils/redisClient.js'
 const generateTokens = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -54,6 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
         avatar:
             profileImage?.url ||
             "https://res.cloudinary.com/dcnb4gg72/image/upload/v1750743495/avatar_bg_zfk1ms.jpg",
+        otpVerified: true,
     });
 
     const createdUser = await User.findById(user._id);
@@ -273,4 +276,57 @@ const deleteUserAccount = asyncHandler(async (req, res) => {
         .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, null, "User account deleted successfully"))
 });
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPasword, updateAccountDetails, updateUserAvatar, deleteUserAccount }
+
+const sendOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  // 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Store OTP in Redis for 10 minutes
+  await redis.set(`otp:${email}`, otp, { EX: 600 });
+
+  // Send email
+  await sendOtpEmail(email, otp);
+
+  return res.status(200).json({
+    success: true,
+    message: 'OTP sent to your email',
+  });
+};
+
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required' });
+  }
+
+  const storedOtp = await redis.get(`otp:${email}`);
+
+  if (!storedOtp) {
+    return res.status(400).json({ message: 'OTP expired or not found' });
+  }
+
+  if (storedOtp !== otp) {
+    return res.status(400).json({ message: 'Invalid OTP' });
+  }
+
+  // OTP is correct ➝ Mark email as verified for now (optional flag)
+  await redis.set(`verified:${email}`, 'true', { EX: 600 }); // valid for 10 mins before register
+
+  // Optionally remove the OTP
+  await redis.del(`otp:${email}`);
+
+  return res.status(200).json({
+    success: true,
+    message: 'Email verified successfully',
+  });
+};
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPasword, updateAccountDetails, updateUserAvatar, deleteUserAccount, generateTokens, sendOtp, verifyOtp }
